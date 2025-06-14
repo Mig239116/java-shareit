@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public User validateNotFound(Long id) {
-        return userStorage.getUser(id).orElseThrow( () -> {
+        return userStorage.getUser(id).orElseThrow(() -> {
                     NotFoundException e = new NotFoundException("User " + id + " not found");
                     log.error(e.getMessage());
                     return e;

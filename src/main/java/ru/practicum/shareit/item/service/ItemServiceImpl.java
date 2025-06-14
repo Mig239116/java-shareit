@@ -74,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Item validateNotFound(Long id) {
-        return itemStorage.getItem(id).orElseThrow( () -> {
+        return itemStorage.getItem(id).orElseThrow(() -> {
                     NotFoundException e = new NotFoundException("Item " + id + " not found");
                     log.error(e.getMessage());
                     return e;
