@@ -51,10 +51,11 @@ public class ItemStorageImpl implements ItemStorage {
         if (text == null || text.isBlank()) {
             return Collections.emptyList();
         }
+        String textLowerCase = text.toLowerCase();
         return items.values().stream()
                 .filter(item -> item.getAvailable() &&
-                        (item.getName() != null && item.getName().toLowerCase().contains(text.toLowerCase())) ||
-                        (item.getDescription() != null && item.getDescription().toLowerCase().contains(text.toLowerCase())))
+                        (item.getName() != null && item.getName().toLowerCase().contains(textLowerCase)) ||
+                        (item.getDescription() != null && item.getDescription().toLowerCase().contains(textLowerCase)))
                 .collect(Collectors.toList());
     }
 

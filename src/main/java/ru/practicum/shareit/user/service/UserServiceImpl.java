@@ -25,9 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto addUser(UserDto userDto) {
-        if (validateEmail(userDto.getEmail()) > 0) {
-            throw new NotUniqueEmail("Email " + userDto.getEmail() + " has been used");
-        }
+        validateEmail(userDto.getEmail());
         User user = UserMapper.toUser(userDto);
         return UserMapper.toUserDto(userStorage.addUser(user));
     }
@@ -38,10 +36,8 @@ public class UserServiceImpl implements UserService {
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
         }
-        if (userDto.getEmail() != null && userDto.getEmail() != user.getEmail()) {
-            if (validateEmail(userDto.getEmail()) > 0) {
-                throw new NotUniqueEmail("Email " + userDto.getEmail() + " has been used");
-            }
+        if (userDto.getEmail() != null && !userDto.getEmail().equals(user.getEmail())) {
+            validateEmail(userDto.getEmail());
             user.setEmail(userDto.getEmail());
         }
         return UserMapper.toUserDto(userStorage.editUser(user, userId));
@@ -67,11 +63,14 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    private long validateEmail(String email) {
-        return userStorage.getUsers()
+    private void validateEmail(String email) {
+        long countEmail = userStorage.getUsers()
                 .stream()
                 .filter(user -> user.getEmail().contains(email))
                 .count();
+        if (countEmail > 0) {
+            throw new NotUniqueEmail("Email " + email + " has been used");
+        }
     }
 
 }

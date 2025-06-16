@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemRequest;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemStorage;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.util.Collection;
@@ -30,9 +31,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(ItemDto itemDto, Long userId) {
-        userService.validateNotFound(userId);
+        User user = userService.validateNotFound(userId);
         Item item = ItemMapper.toItem(itemDto);
-        return ItemMapper.toItemDto(itemStorage.addItem(item, userService.validateNotFound(userId)));
+        return ItemMapper.toItemDto(itemStorage.addItem(item, user));
     }
 
     @Override
