@@ -18,7 +18,7 @@ public class ItemRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="description", nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
     @ManyToOne

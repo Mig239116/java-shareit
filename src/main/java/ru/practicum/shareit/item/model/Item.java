@@ -11,31 +11,31 @@ import java.util.List;
 
 
 @Entity
-@Table(name="items")
+@Table(name = "items")
 @Builder
 @Setter
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode(of="id")
+@EqualsAndHashCode(of = "id")
 @ToString
-@FieldDefaults(level=AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 public class Item {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="name", nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name="description", nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "is_available", nullable = false)
     private Boolean available;
 
     @ManyToOne
-    @JoinColumn(name="owner_id")
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     @ManyToOne

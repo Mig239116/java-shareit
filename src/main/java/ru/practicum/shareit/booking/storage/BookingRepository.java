@@ -1,13 +1,11 @@
 package ru.practicum.shareit.booking.storage;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -62,9 +60,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     );
 
     List<Booking> findByItemOwnerId(Long ownerId, Sort sort);
+
     List<Booking> findByItemOwnerIdAndStatus(Long ownerId, BookingStatus status, Sort sort);
 
-    // Специальные методы для временных фильтров
     @Query("SELECT b FROM Booking b WHERE b.item.owner.id = :ownerId " +
             "AND b.start <= :now AND b.end >= :now")
     List<Booking> findCurrentByOwner(
