@@ -126,6 +126,7 @@ public class ItemServiceImpl implements ItemService {
         return userStorage.findById(id)
                 .orElseThrow(() -> new NotFoundException("User " + id + " not found"));
     }
+
     private Item validateNotFound(Long id) {
         return itemStorage.findById(id).orElseThrow(() -> {
                     NotFoundException e = new NotFoundException("Item " + id + " not found");

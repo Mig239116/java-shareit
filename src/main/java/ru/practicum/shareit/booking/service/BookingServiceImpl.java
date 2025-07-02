@@ -126,6 +126,7 @@ public class BookingServiceImpl implements BookingService {
                     status);
         }
     }
+
     private void validateDates(NewBookingDto booking) {
         if (!booking.getEnd().isAfter(booking.getStart())) {
             throw new BadRequestException("The start date " +
