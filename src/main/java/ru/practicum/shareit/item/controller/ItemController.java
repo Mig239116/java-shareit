@@ -37,7 +37,7 @@ public class ItemController {
                 itemDto.getName(),
                 userId);
         ItemDto itemDtoStored = itemService.addItem(itemDto, userId);
-        log.debug("POST/items: the process was completed successfully. A new item {} with id {} has been created by user",
+        log.debug("POST/items: the process was completed successfully. A new item {} with id {} has been created by user {}",
                 itemDtoStored.getName(),
                 itemDtoStored.getId(),
                 itemDtoStored.getOwner()
@@ -55,7 +55,7 @@ public class ItemController {
                 itemDto.getName(),
                 userId);
         ItemDto itemDtoStored = itemService.editItem(itemDto, itemId, userId);
-        log.debug("PATCH/item/id: the process was completed successfully. A new item {} with id {} has been created by user",
+        log.debug("PATCH/item/id: the process was completed successfully. A new item {} with id {} has been created by user {}",
                 itemDtoStored.getName(),
                 itemDtoStored.getId(),
                 itemDtoStored.getOwner()

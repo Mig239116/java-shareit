@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -26,6 +27,6 @@ public class ItemDto {
     private User owner;
     private ItemRequest request;
     private List<CommentDto> comments;
-    private BookingShortDto lastBooking;
-    private BookingShortDto nextBooking;
+    private LocalDate lastBooking;
+    private LocalDate nextBooking;
 }

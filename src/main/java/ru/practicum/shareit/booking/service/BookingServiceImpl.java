@@ -39,10 +39,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDto addBooking(NewBookingDto bookingDto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-        Item item = itemRepository.findById(bookingDto.getItemId())
-                .orElseThrow(() -> new NotFoundException("Item not found"));
+        validateDates(bookingDto);
+        User user = validateUser(userId);
+        Item item = validateItem(bookingDto.getItemId());
         if (!item.getAvailable()) {
             throw new BadRequestException("Item with id " + item.getId() + " is not available for booking");
         }
@@ -57,6 +56,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto confirmBooking(Long bookingId, Long userId, Boolean approved) {
         Booking booking = validateNotFound(bookingId);
         validateBookingByOwner(bookingId, userId);
+        validateStatus(booking.getStatus());
         if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
         } else {
@@ -77,8 +77,7 @@ public class BookingServiceImpl implements BookingService {
         if (state == null) {
             state = BookingState.ALL;
         }
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+        validateUser(userId);
         Sort sort = Sort.by("start").descending();
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = switch (state) {
@@ -99,8 +98,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Collection<BookingDto> getBookingsByOwner(BookingState state, Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+        validateUser(userId);
         long count = itemService.getItems(userId).size();
         if (count == 0) {
             throw new NotFoundException("User has no items");
@@ -120,6 +118,30 @@ public class BookingServiceImpl implements BookingService {
         return bookings.stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
+    }
+
+    private void validateStatus(BookingStatus status) {
+        if (status != BookingStatus.WAITING) {
+            throw new BadRequestException("The status of booking should be WAITING while current status is " +
+                    status);
+        }
+    }
+    private void validateDates(NewBookingDto booking) {
+        if (!booking.getEnd().isAfter(booking.getStart())) {
+            throw new BadRequestException("The start date " +
+                    booking.getStart() + " is after or equals to end date " +
+                    booking.getEnd());
+        }
+    }
+
+    private User validateUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User " + id + " not found"));
+    }
+
+    private Item validateItem(Long id) {
+        return itemRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Item " + id + " not found"));
     }
 
     private void validateBookingByBookerOrOwner(Long bookingId, Long userId) {

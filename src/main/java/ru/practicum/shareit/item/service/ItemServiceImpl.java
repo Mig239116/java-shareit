@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.storage.BookingRepository;
@@ -25,6 +26,7 @@ import ru.practicum.shareit.user.storage.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -75,9 +77,24 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<ItemDto> getItems(Long userId) {
-        return itemStorage.findByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        Collection<Item> items = itemStorage.findByOwnerId(userId);
+        LocalDateTime now = LocalDateTime.now();
+        return items.stream().map(item -> {
+            ItemDto dto = ItemMapper.toItemDto(item);
+
+            List<LocalDateTime> lastDates = bookingStorage.findLastBookingDate(
+                    item.getId(), now, Sort.by(Sort.Direction.DESC, "end"));
+            if (!lastDates.isEmpty()) {
+                dto.setLastBooking(lastDates.get(0).toLocalDate());
+            }
+
+            List<LocalDateTime> nextDates = bookingStorage.findNextBookingDate(
+                    item.getId(), now, Sort.by(Sort.Direction.ASC, "start"));
+            if (!nextDates.isEmpty()) {
+                dto.setNextBooking(nextDates.get(0).toLocalDate());
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -93,25 +110,22 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public CommentDto addComment(Long itemId, Long userId, CommentRequestDto commentDto) {
-        User author = userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-        Item item = itemStorage.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Item not found"));
+        User author = validateUser(userId);
+        Item item = validateNotFound(itemId);
         if (!bookingStorage.existsByBookerIdAndItemIdAndEndBefore(
                 userId, itemId, LocalDateTime.now())) {
             throw new BadRequestException("User didn't book this item");
         }
 
-        Comment comment = new Comment();
-        comment.setText(commentDto.getText());
-        comment.setItem(item);
-        comment.setAuthor(author);
-        comment.setCreated(LocalDateTime.now());
-
+        Comment comment = CommentMapper.requestToComment(commentDto, item, author);
         Comment savedComment = commentStorage.save(comment);
         return CommentMapper.toCommentDto(savedComment);
     }
 
+    private User validateUser(Long id) {
+        return userStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("User " + id + " not found"));
+    }
     private Item validateNotFound(Long id) {
         return itemStorage.findById(id).orElseThrow(() -> {
                     NotFoundException e = new NotFoundException("Item " + id + " not found");
