@@ -2,9 +2,9 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.NotFoundException;
@@ -24,9 +24,7 @@ import ru.practicum.shareit.user.service.UserServiceImpl;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -77,25 +75,32 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<ItemDto> getItems(Long userId) {
-        Collection<Item> items = itemStorage.findByOwnerId(userId);
+        List<Item> items = itemStorage.findByOwnerId(userId);
+        List<Booking> allBookings = bookingStorage.findApprovedBookingsForItems(items);
+        Map<Long, List<Booking>> bookingsByItem = allBookings.stream()
+                .collect(Collectors.groupingBy(b -> b.getItem().getId()));
         LocalDateTime now = LocalDateTime.now();
-        return items.stream().map(item -> {
-            ItemDto dto = ItemMapper.toItemDto(item);
+        return items.stream()
+                .map(item -> {
+                    ItemDto dto = ItemMapper.toItemDto(item);
+                    List<Booking> itemBookings = bookingsByItem.getOrDefault(item.getId(), Collections.emptyList());
 
-            List<LocalDateTime> lastDates = bookingStorage.findLastBookingDate(
-                    item.getId(), now, Sort.by(Sort.Direction.DESC, "end"));
-            if (!lastDates.isEmpty()) {
-                dto.setLastBooking(lastDates.get(0).toLocalDate());
-            }
+                    Optional<Booking> lastBooking = itemBookings.stream()
+                            .filter(b -> b.getEnd().isBefore(now))
+                            .max(Comparator.comparing(Booking::getEnd));
 
-            List<LocalDateTime> nextDates = bookingStorage.findNextBookingDate(
-                    item.getId(), now, Sort.by(Sort.Direction.ASC, "start"));
-            if (!nextDates.isEmpty()) {
-                dto.setNextBooking(nextDates.get(0).toLocalDate());
-            }
-            return dto;
-        }).collect(Collectors.toList());
+                    Optional<Booking> nextBooking = itemBookings.stream()
+                            .filter(b -> b.getStart().isAfter(now))
+                            .min(Comparator.comparing(Booking::getStart));
+
+                    lastBooking.ifPresent(b -> dto.setLastBooking(b.getEnd().toLocalDate()));
+                    nextBooking.ifPresent(b -> dto.setNextBooking(b.getStart().toLocalDate()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public Collection<ItemDto> searchItems(String text) {

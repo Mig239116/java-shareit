@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -102,4 +103,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<LocalDateTime> findNextBookingDate(@Param("itemId") Long itemId,
                                             @Param("currentTime") LocalDateTime currentTime,
                                             Sort sort);
+
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.item IN :items " +
+            "AND b.status = 'APPROVED' " +
+            "ORDER BY b.start ASC")
+    List<Booking> findApprovedBookingsForItems(@Param("items") List<Item> items);
 }
