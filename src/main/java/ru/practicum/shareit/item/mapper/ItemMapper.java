@@ -1,9 +1,13 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+
+import java.util.ArrayList;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
@@ -14,7 +18,10 @@ public class ItemMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getOwner(),
-                item.getRequest()
+                item.getRequest(),
+                item.getComments().stream().map(CommentMapper::toCommentDto).toList(),
+                null,
+                null
         );
     }
 
@@ -25,7 +32,9 @@ public class ItemMapper {
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 itemDto.getOwner(),
-                itemDto.getRequest()
+                itemDto.getRequest(),
+                new ArrayList<Booking>(),
+                new ArrayList<Comment>()
         );
     }
 

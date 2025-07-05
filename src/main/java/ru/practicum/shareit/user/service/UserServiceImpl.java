@@ -1,36 +1,36 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.NotUniqueEmail;
-import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.dto.UpdateUserRequest;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
-    public final UserStorage userStorage;
+    public final UserRepository userStorage;
 
-    @Autowired
-    public UserServiceImpl(@Qualifier("userStorageImpl") UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     @Override
+    @Transactional
     public UserDto addUser(UserDto userDto) {
         validateEmail(userDto.getEmail());
         User user = UserMapper.toUser(userDto);
-        return UserMapper.toUserDto(userStorage.addUser(user));
+        return UserMapper.toUserDto(userStorage.save(user));
     }
 
     @Override
+    @Transactional
     public UserDto editUser(UpdateUserRequest userDto, Long userId) {
         User user = validateNotFound(userId);
         if (userDto.getName() != null) {
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
             validateEmail(userDto.getEmail());
             user.setEmail(userDto.getEmail());
         }
-        return UserMapper.toUserDto(userStorage.editUser(user, userId));
+        return UserMapper.toUserDto(user);
     }
 
     @Override
@@ -49,13 +49,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean deleteUser(Long userId) {
+    @Transactional
+    public void deleteUser(Long userId) {
         validateNotFound(userId);
-        return userStorage.deleteUser(userId);
+        userStorage.deleteById(userId);
     }
 
-    public User validateNotFound(Long id) {
-        return userStorage.getUser(id).orElseThrow(() -> {
+    private User validateNotFound(Long id) {
+        return userStorage.findById(id).orElseThrow(() -> {
                     NotFoundException e = new NotFoundException("User " + id + " not found");
                     log.error(e.getMessage());
                     return e;
@@ -64,12 +65,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateEmail(String email) {
-        long countEmail = userStorage.getUsers()
-                .stream()
-                .filter(user -> user.getEmail().contains(email))
-                .count();
-        if (countEmail > 0) {
-            throw new NotUniqueEmail("Email " + email + " has been used");
+        if (userStorage.existsByEmail(email)) {
+            throw new NotUniqueEmail("Email " + email + " already exists");
         }
     }
 

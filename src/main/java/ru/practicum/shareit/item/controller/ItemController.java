@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemRequest;
 import ru.practicum.shareit.item.service.ItemService;
@@ -35,7 +37,7 @@ public class ItemController {
                 itemDto.getName(),
                 userId);
         ItemDto itemDtoStored = itemService.addItem(itemDto, userId);
-        log.debug("POST/items: the process was completed successfully. A new item {} with id {} has been created by user",
+        log.debug("POST/items: the process was completed successfully. A new item {} with id {} has been created by user {}",
                 itemDtoStored.getName(),
                 itemDtoStored.getId(),
                 itemDtoStored.getOwner()
@@ -53,7 +55,7 @@ public class ItemController {
                 itemDto.getName(),
                 userId);
         ItemDto itemDtoStored = itemService.editItem(itemDto, itemId, userId);
-        log.debug("PATCH/item/id: the process was completed successfully. A new item {} with id {} has been created by user",
+        log.debug("PATCH/item/id: the process was completed successfully. A new item {} with id {} has been created by user {}",
                 itemDtoStored.getName(),
                 itemDtoStored.getId(),
                 itemDtoStored.getOwner()
@@ -80,6 +82,14 @@ public class ItemController {
     public Collection<ItemDto> searchItems(@RequestParam String text) {
         log.debug("GET/items: all items of the containing text {}", text);
         return itemService.searchItems(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(
+            @PathVariable Long itemId,
+            @Valid @RequestBody CommentRequestDto commentDto,
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.addComment(itemId, userId, commentDto);
     }
 
 }
