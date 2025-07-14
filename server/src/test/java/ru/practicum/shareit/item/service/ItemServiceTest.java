@@ -9,13 +9,17 @@ import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.item.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,6 +74,32 @@ class ItemServiceTest {
         );
 
         assertEquals("User didn't book this item", exception.getMessage());
+    }
+
+    private User createTestUser(Long id) {
+        return new User(id, "User " + id, "user" + id + "@test.com");
+    }
+
+    @Test
+    void searchAvailableItem_isValid() {
+        Item item = new Item();
+        item.setId(1L);
+        item.setName("Item " + 1L);
+        item.setDescription("Description " + 1L);
+        item.setAvailable(true);
+        item.setOwner(createTestUser(1L));
+        item.setBookings(new ArrayList<>());
+        item.setComments(new ArrayList<>());
+
+        ItemDto itemDto = ItemMapper.toItemDto(item);
+        List<Item> itemList = new ArrayList<>();
+        itemList.add(item);
+        when(itemRepository.search("testItem")).thenReturn(itemList);
+
+        List<ItemDto> actual = itemService.searchItems("testItem").stream().toList();
+        assertEquals(itemDto.getId(), actual.get(0).getId());
+        assertEquals(itemDto.getName(), actual.get(0).getName());
+        assertEquals(itemDto.getDescription(), actual.get(0).getDescription());
     }
 }
 

@@ -254,4 +254,10 @@ class BookingServiceTest {
         }
     }
 
+    @Test
+    void getUserBookings_WithUnknownState_ShouldThrowException() {
+        assertThrows(NoSuchElementException.class,
+                () -> bookingService.getUserBookings(BookingState.from("UNKNOWN").orElseThrow(), user.getId()));
+    }
+
 }
