@@ -39,7 +39,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDto addBooking(NewBookingDto bookingDto, Long userId) {
-        validateDates(bookingDto);
         User user = validateUser(userId);
         Item item = validateItem(bookingDto.getItemId());
         if (!item.getAvailable()) {
@@ -124,14 +123,6 @@ public class BookingServiceImpl implements BookingService {
         if (status != BookingStatus.WAITING) {
             throw new BadRequestException("The status of booking should be WAITING while current status is " +
                     status);
-        }
-    }
-
-    private void validateDates(NewBookingDto booking) {
-        if (!booking.getEnd().isAfter(booking.getStart())) {
-            throw new BadRequestException("The start date " +
-                    booking.getStart() + " is after or equals to end date " +
-                    booking.getEnd());
         }
     }
 

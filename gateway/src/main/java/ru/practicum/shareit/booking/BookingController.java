@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingState;
-
+import ru.practicum.shareit.exceptions.BadRequestException;
 
 
 @Controller
@@ -34,6 +34,7 @@ public class BookingController {
     public ResponseEntity<Object> addBooking(@RequestHeader("X-Sharer-User-Id") long userId,
                                            @RequestBody @Valid BookItemRequestDto requestDto) {
         log.info("Creating booking {}, userId={}", requestDto, userId);
+        validateDates(requestDto);
         return bookingClient.addBooking(userId, requestDto);
     }
 
@@ -63,5 +64,13 @@ public class BookingController {
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + state));
         log.info("Get booking with state {}, userId={}", state, userId);
         return bookingClient.getBookingsByOwner(userId, state);
+    }
+
+    private void validateDates(BookItemRequestDto booking) {
+        if (!booking.getEnd().isAfter(booking.getStart())) {
+            throw new BadRequestException("The start date " +
+                    booking.getStart() + " is after or equals to end date " +
+                    booking.getEnd());
+        }
     }
 }

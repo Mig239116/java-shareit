@@ -57,7 +57,7 @@ class ItemRequestMapperTest {
         ResponseItemRequestDto dto = ItemRequestMapper.toResponseDto(request);
 
         assertNotNull(dto);
-        assertNull(dto.getItems());
+        assertTrue(dto.getItems().isEmpty());
     }
 
     @Test

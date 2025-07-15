@@ -105,16 +105,6 @@ class BookingServiceTest {
         assertThrows(BadRequestException.class, () -> bookingService.addBooking(newBookingDto, 1L));
     }
 
-    @Test
-    void addBooking_WhenInvalidDates_ShouldThrowException() {
-        NewBookingDto invalidBookingDto = new NewBookingDto(
-                1L,
-                LocalDateTime.now().plusDays(2),
-                LocalDateTime.now().plusDays(1)
-        );
-
-        assertThrows(BadRequestException.class, () -> bookingService.addBooking(invalidBookingDto, 1L));
-    }
 
     @Test
     void confirmBooking_WhenApproved_ShouldUpdateStatus() {

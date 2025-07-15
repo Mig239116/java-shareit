@@ -8,6 +8,7 @@ import ru.practicum.shareit.request.dto.ResponseItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemRequestMapper {
@@ -26,7 +27,7 @@ public class ItemRequestMapper {
                 request.getDescription(),
                 request.getRequestor(),
                 request.getCreated(),
-                null
+                new ArrayList<>()
         );
     }
 

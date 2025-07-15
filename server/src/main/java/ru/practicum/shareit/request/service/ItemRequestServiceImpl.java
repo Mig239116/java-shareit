@@ -48,7 +48,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         ItemRequest request = validateNotFound(requestId);
         List<Item> itemList = itemRepository.findByRequestId(requestId);
         ResponseItemRequestDto responseDto = ItemRequestMapper.toResponseDto(request);
-        responseDto.setItems(itemList.stream().map(ItemMapper::toItemReturnedDto).toList());
+        responseDto.setItems(itemList
+                .stream()
+                .map(ItemMapper::toItemReturnedDto)
+                .toList());
         return responseDto;
     }
 
@@ -58,13 +61,17 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         Sort sort = Sort.by("created").descending();
         Collection<ItemRequest> requests = itemRequestStorage.findByRequestorId(user.getId(), sort);
         List<Item> allItems = itemRepository.findItemsForItemRequests(requests.stream().toList());
-        Map<Long, List<Item>> itemsByRequest = allItems.stream()
+        Map<Long, List<Item>> itemsByRequest = allItems
+                .stream()
                 .collect(Collectors.groupingBy(b -> b.getRequest().getId()));
         return requests.stream().map(
                 request -> {
                     ResponseItemRequestDto requestDto = ItemRequestMapper.toResponseDto(request);
                     List<Item> requestedItems = itemsByRequest.getOrDefault(request.getId(), Collections.emptyList());
-                    requestDto.setItems(requestedItems.stream().map(ItemMapper::toItemReturnedDto).toList());
+                    requestDto.setItems(requestedItems
+                            .stream()
+                            .map(ItemMapper::toItemReturnedDto)
+                            .toList());
                     return requestDto;
                 }
         ).collect(Collectors.toList());

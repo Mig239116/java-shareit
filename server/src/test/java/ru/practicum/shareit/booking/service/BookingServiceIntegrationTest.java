@@ -116,15 +116,5 @@ class BookingServiceIntegrationTest {
         assertEquals(owner.getId(), result.get(0).getItem().getOwner().getId());
     }
 
-    @Test
-    void validateDates_WhenEndBeforeStart_ShouldThrowException() {
-        NewBookingDto invalidBooking = new NewBookingDto(
-                item.getId(),
-                LocalDateTime.now().plusDays(2),
-                LocalDateTime.now().plusDays(1)
-        );
 
-        assertThrows(BadRequestException.class,
-                () -> bookingService.addBooking(invalidBooking, booker.getId()));
-    }
 }
